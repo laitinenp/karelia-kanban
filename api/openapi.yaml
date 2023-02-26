@@ -1,0 +1,257 @@
+openapi: 3.0.0
+info:
+  title: (version 0.1) Karelia Kanban API
+  description: "(v0.1) Karelia Kanban / JIT API for educational purposes 3/2023. Kanban\
+    \ is a Just In Time (JIT) production process designed to optimise the flow of\
+    \ the raw resources and components used in the creation of an end product. Petri\
+    \ Laitinen, Karelia UAS"
+  version: 1.0.0
+servers:
+- url: http://localhost:3000/
+  description: (v0.1) "Sample Kanban API Application"
+tags:
+- name: Access Control
+  description: (v0.1) Access control functions
+- name: Boards
+  description: (v0.1) Boards CRUD
+- name: Tickets
+  description: (v0.1) Tickets CRUD
+- name: Services
+  description: (v0.1) Data services
+paths:
+  /api/boards:
+    get:
+      tags:
+      - Boards
+      summary: Returns a list of available boards
+      operationId: apiBoardsGET
+      responses:
+        "200":
+          description: (v0.1) Succesfully returned a list of available kanban boards
+          content:
+            application/json:
+              schema:
+                type: array
+                description: list of service descriptors
+                items:
+                  $ref: '#/components/schemas/Board'
+                x-content-type: application/json
+            text/csv:
+              schema:
+                type: string
+              example: "id,name,description,learningObjectives DD10004,API Design\
+                \ & Development,API Design & Development using REST, Student is able\
+                \ to comprehend the ..."
+        "415":
+          description: Unsupported Media Type
+      x-swagger-router-controller: Boards
+  /api/boards/{boardId}:
+    get:
+      tags:
+      - Boards
+      summary: Returns a single board
+      operationId: apiBoardsBoardIdGET
+      parameters:
+      - name: boardId
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: (v1.0) Succesfully returned a Board object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Board'
+        "404":
+          description: Not found
+        "415":
+          description: Unsupported Media Type
+        default:
+          description: Unexpected error
+      x-swagger-router-controller: Boards
+  /api/boards/{boardId}/tickets:
+    get:
+      tags:
+      - Tickets
+      summary: Returns a list of tickets inside a board
+      operationId: apiBoardsBoardIdTicketsGET
+      parameters:
+      - name: boardId
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: (v1.0) Succesfully returned a service descriptor
+          content:
+            application/json:
+              schema:
+                type: array
+                description: list of service descriptors
+                items:
+                  $ref: '#/components/schemas/Ticket'
+                x-content-type: application/json
+      security:
+      - bearerAuth: []
+      x-swagger-router-controller: Tickets
+  /api/boards/{boardId}/tickets/{ticketId}:
+    get:
+      tags:
+      - Tickets
+      summary: Returns a single ticket
+      operationId: apiBoardsBoardIdTicketsTicketIdGET
+      parameters:
+      - name: ticketId
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uuid
+      - name: boardId
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: (v1.0) Succesfully returned a Board object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        "404":
+          description: Not found
+        "415":
+          description: Unsupported Media Type
+        default:
+          description: Unexpected error
+      x-swagger-router-controller: Tickets
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        userId:
+          type: integer
+          description: (v1.0) identifier
+          nullable: false
+        forename:
+          maxLength: 100
+          type: string
+          description: (v1.0) forename
+          nullable: false
+        surname:
+          maxLength: 100
+          type: string
+          description: (v1.0) family name
+          nullable: false
+        username:
+          maxLength: 100
+          type: string
+          description: (v1.0) forename
+          nullable: false
+        password:
+          maxLength: 100
+          type: string
+          description: (v1.0) forename
+          nullable: false
+        email:
+          maxLength: 1024
+          type: string
+          description: (v1.0) email address
+          nullable: false
+      example:
+        userId: 123
+        forename: Gina
+        surname: Lollobrigida
+        username: gina
+        password: sosecret
+        email: gina@somemail.com
+    Board:
+      type: object
+      properties:
+        id:
+          type: string
+          description: (v1.0) identifier
+          format: uuid
+          nullable: false
+        name:
+          maxLength: 100
+          type: string
+          description: (v1.0) course name
+          nullable: true
+        description:
+          maxLength: 1024
+          type: string
+          description: (v1.0) course description
+          nullable: true
+        responsiblePerson:
+          $ref: '#/components/schemas/User'
+      example:
+        id: B123
+        name: Karelia Kanban API
+        description: Create an implementation for this API
+        responsiblePerson:
+          userId: 123
+          forename: Gina
+          surname: Lollobrigida
+          username: gina
+          password: sosecret
+          email: gina@somemail.com
+    Ticket:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: false
+        name:
+          maxLength: 100
+          type: string
+          description: (v1.0) Course implementation description
+          nullable: true
+          example: API Design & Development
+        createdDate:
+          type: string
+          description: creation date
+          format: date
+          example: 2021-02-28
+        dueDate:
+          type: string
+          description: course end date. can be null.
+          format: date
+          nullable: true
+          example: 2023-06-30
+        responsiblePerson:
+          $ref: '#/components/schemas/User'
+      example:
+        id: T123
+        name: Create a node server
+        desicription: using the GenerateServer tools in the Swagger editor
+        dueDate: 2023-06-30
+        responsiblePerson:
+          userId: 123
+          forename: Gina
+          surname: Lollobrigida
+          username: gina
+          password: sosecret
+          email: gina@somemail.com
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
